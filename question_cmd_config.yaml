@@ -1,0 +1,9 @@
+engine_config:
+  engine_path : "YaneuraOu-by-gcc.exe"
+  engine_name : "yaneuraou_6.50 QPD"
+  engine_mode : "yaneuraou" 
+  option : [["Threads", "4"], ["BookFile", "no_book"], ["MultiPV", "5"], ["EvalDir", "eval"]]
+go_cmd : "go nodes 500000"
+go_cmd_calc : "go nodes 10000"
+go_cmd_null : "go nodes 500000"
+go_cmd_null_enemy : "go nodes 50000"

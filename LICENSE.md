@@ -1,0 +1,1 @@
+Qhapaq-Research-Lab all rights reserved

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Qhapaq Shogi Academy</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+    <body>    
+    <div id="app">
+    <nav class="navbar navbar-light bg-light">
+        ファイルを開く：
+    </nav>
+    <button class="btn btn-secondary" @click="open_folder()">問題フォルダを開く</button>　
+    <button class="btn btn-secondary" @click="open_history()">成績表を開く</button>　
+    <button class="btn btn-secondary" @click="open_kif()">棋譜を解析する</button>　
+    <nav class="navbar navbar-light bg-light">
+        問題のフィルタリング：
+    </nav>
+    <table>
+        <tr>
+            <td>最善手とパスの間の評価値の差分</td>
+            <td><input type="number" v-model="diff_null_min" value="-99999" step="1" min="-99999" >以上</td>
+            <td><input type="number" v-model="diff_null_max" value="99999" step="1" min="-99999">以下</td>
+        </tr>
+        <tr>
+            <td>浅い読みと深い読みの評価値差分</td>
+            <td><input type="number" v-model="diff_calc_min" value="-99999" step="1" min="-99999" >以上</td>
+            <td><input type="number" v-model="diff_calc_max" value="99999" step="1" min="-99999">以下</td>
+        </tr>
+        <template v-if="history_mode">
+            <tr>
+                <td>最善手と過去の答えの間の評価値の差分</td>
+                <td><input type="number" v-model="diff_ans_min" value="-99999" step="1" min="-99999" >以上</td>
+                <td><input type="number" v-model="diff_ans_max" value="99999" step="1" min="-99999">以下</td>
+            </tr>
+        </template>
+        <tr>
+            <td>手番別フィルタ</td>
+            <td><input type="checkbox" v-model="use_black" checked>先手</td>
+            <td><input type="checkbox" v-model="use_white" checked>後手</td>
+        </tr>
+    
+    </table>
+    <br> <br>
+    <button class="btn btn-secondary" @click="send_info()">適用</button>　
+    <button class="btn btn-secondary" @click="shuffle_quiz()">問題をシャッフル</button>　
+    <button class="btn btn-secondary" @click="shuffle_quiz_dict()">フォルダ別に問題をシャッフル</button>　
+    <button class="btn btn-secondary" @click="close_window()">閉じる</button> 
+    <template v-if="history_mode">
+        <nav class="navbar navbar-light bg-light">
+            成績概要： {{ summary.summary_txt }}
+        </nav>
+    </template>
+</div>
+<script src="https://unpkg.com/vue@3"></script>
+<script src="./quiz_loader.js"></script>
+<script>
+</script>
+<script>
+    Vue.createApp({
+      data() {
+          return{
+            diff_null_min : -99999,
+            diff_null_max : 99999,
+            diff_calc_min : -99999,
+            diff_calc_max : 99999,
+            diff_ans_min : -99999,
+            diff_ans_max : 99999,
+            use_black : true,
+            use_white : true,
+            history_mode : false,
+            ques_path_list : [], // qsa本体から送られてくる問題のリスト
+            summary : {"summary_txt" : ""}
+          }
+      },
+      methods:{
+        send_info(){
+            window.opener.postMessage(
+                {
+                    "filter_config" : {
+                        "diff_calc_min" : this.diff_calc_min,
+                        "diff_calc_max" : this.diff_calc_max,
+                        "diff_null_min" : this.diff_null_min,
+                        "diff_null_max" : this.diff_null_max,
+                        "diff_ans_min" : this.diff_ans_min,
+                        "diff_ans_max" : this.diff_ans_max,
+                        "use_black" : this.use_black,
+                        "use_white" : this.use_white,
+                    },
+                    "cmd" : "filter"
+                }
+            );
+        },
+        shuffle_quiz(){
+            window.opener.postMessage(
+                {
+                    "shuffle" : true,
+                    "cmd" : "filter"
+                }
+            );
+        },
+        shuffle_quiz_dict(){
+            window.opener.postMessage(
+                {
+                    "shuffle_dir" : true,
+                    "cmd" : "filter"
+                }
+            );
+        },
+        open_folder(){
+            window.opener.postMessage(
+                {
+                    "cmd" : "open_folder"
+                }
+            );
+        },
+        open_history(){
+            window.opener.postMessage(
+                {
+                    "cmd" : "open_history"
+                }
+            );
+        },
+        open_kif(){
+            window.opener.postMessage(
+                {
+                    "cmd" : "open_kif"
+                }
+            );
+        },
+        
+        close_window(){
+            javascript:window.close();
+        }
+      },
+      mounted() {
+        window.addEventListener('message', (e) => {
+            this.history_mode=e.data.history;
+            this.summary = e.data.summary;
+            //alert(e.data.summary.summary_txt);
+        })
+      }
+    }).mount('#app')
+</script>
+</body>
+
+</html>

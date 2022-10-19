@@ -1,0 +1,107 @@
+@charset "UTF-8";
+ 
+body {
+    margin: 0;
+    padding: 0;
+    color: #222222;
+    font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,Segoe UI,Hiragino Kaku Gothic ProN,Hiragino Sans,ヒラギノ角ゴ ProN W3,Arial,メイリオ,Meiryo,sans-serif;
+}
+ 
+.memo {
+    height:90%;
+    display:block;
+    padding:10px;
+    line-height: 10px;
+    font-size: 10px;
+}
+
+
+.margin-area {
+    bottom:0;
+    width:100%;
+    padding:10px;
+}
+ 
+.open-btn {
+    background-color: #2cb696;
+    color: #fff;
+}
+
+.boardflip{
+    transform: rotate( -180deg );
+    float : left;
+}
+
+
+.pieceflip{
+    transform: rotate( -180deg );
+}
+ 
+.resultmessage {
+    opacity:0.7;
+}
+
+.wrapper {
+    width: 570px;
+    height: 390px;
+    display: flex;
+    margin: 1px auto;
+    justify-content: center;
+  }
+
+.board_area{
+    width: 365px;
+    height: 390px;
+}
+
+
+.board {
+    width: 364px;
+    height: 364px;
+    border: 2px solid black;
+  }
+.side_info{
+    width: 200px;
+    height: 390px;
+}
+
+
+.square {
+    width: 40px;
+    height: 40px;
+    border : 1px solid black;
+    background-color: burlywood;
+    float: left;
+    text-align: center;
+    font-size: 25px;
+}
+
+.square_select {
+    width: 40px;
+    height: 40px;
+    border : 1px solid black;
+    background-color: skyblue;
+    float: left;
+    text-align: center;
+    font-size: 25px;
+}
+
+
+.hand {
+    font-size: 25px;
+}
+
+.hand_select {
+    font-size: 25px;
+    background-color:skyblue;
+}
+
+.teban {
+    font-size: 25px;
+    background-color:red;
+}
+
+#bad_alert {
+    width: 5em;
+}

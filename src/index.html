@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Qhapaq Shogi Academy</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="app">
+      
+       
+      <div class="wrapper">
+      <div class="board_area">
+      <span v-if="position.board">
+      <template v-if="is_flip_board">
+        <template v-if="position.turn_white">
+          <span class="hand" @click="put_to_hand(true)" @click.right="flip_preference()">☗ 先手：</span>  
+        </template>
+        <template v-else>
+          <span class="teban"><span class="hand" @click="put_to_hand(true)" @click.right="flip_preference()">☗ 先手：</span></span>
+        </template>
+        <template v-for="piece in position.piece_black">
+          <template v-if="piece.piece_type==watch_piece">
+            <span class="hand_select" @click="grap_piece_mod(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+          <template v-else>
+            <span class="hand" @click="grap_piece_mod(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+        </template>        
+        <br>
+        <div class="boardflip">
+          <div class="board">
+      
+            <div v-for="y in 9">
+              <div v-for="x in 9">
+                <template v-if="x == watch_square[0] && y==watch_square[1]">
+                  <template v-if="flip_check(x, y)">
+                    <div class="square_select" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">
+                      <div class="pieceflip">{{get_piece_str(x,y)}}</div>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="square_select" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">{{get_piece_str(x,y)}}</div>
+                  </template>
+                </template>
+                <template v-else>
+                  <template v-if="flip_check(x, y)">
+                    <div class="square" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">
+                      <div class="pieceflip">{{get_piece_str(x,y)}}</div>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="square" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">{{get_piece_str(x,y)}}</div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <template v-if="position.turn_white">
+          <span class="teban"><span class="hand" @click="put_to_hand(false)" @click.right="flip_preference()">☖ 後手：</span></span>
+        </template>
+        <template v-else>
+          <span class="hand" @click="put_to_hand(false)" @click.right="flip_preference()">☖ 後手：</span>
+        </template>
+        <template v-for="piece in position.piece_white">
+          <template v-if="piece.piece_type==watch_piece">
+            <span class="hand_select" @click="grap_piece(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+          <template v-else>
+            <span class="hand" @click="grap_piece(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+        </template>
+      </template>
+      <template v-else>
+        <template v-if="position.turn_white">
+          <span class="teban">
+            <span class="hand" @click="put_to_hand(false)" @click.right="flip_preference()">☖ 後手：</span>
+          </span>
+        </template>
+        <template v-else>
+        <span class="hand" @click="put_to_hand(false)" @click.right="flip_preference()">☖ 後手：</span>
+        </template>
+        <template v-for="piece in position.piece_white">
+          <template v-if="piece.piece_type==watch_piece">
+            <span class="hand_select" @click="grap_piece_mod(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+          <template v-else>
+            <span class="hand" @click="grap_piece_mod(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+        </template>
+        <div class="board">
+          <div v-for="y in 9">
+            <div v-for="x in 9">
+              <template v-if="x == watch_square[0] && y==watch_square[1]">
+                <template v-if="flip_check(x, y)">
+                  <div class="square_select" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">
+                    <div class="pieceflip">{{get_piece_str(x,y)}}</div>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="square_select" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">{{get_piece_str(x,y)}}</div>
+                </template>
+              </template>
+              <template v-else>
+                <template v-if="flip_check(x, y)">
+                  <div class="square" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">
+                    <div class="pieceflip">{{get_piece_str(x,y)}}</div>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="square" :id='`${x}-${y}`' @click="clickBoard(x, y)" @click.right="clickBoardRight(x, y)">{{get_piece_str(x,y)}}</div>
+                </template>
+              </template>
+            </div>
+          </div>
+        </div>
+        <template v-if="position.turn_white">
+          <span class="hand" @click="put_to_hand(true)" @click.right="flip_preference()">☗ 先手：</span>  
+        </template>
+        <template v-else>
+          <span class="teban"><span class="hand" @click="put_to_hand(true)" @click.right="flip_preference()">☗ 先手：</span></span>
+        </template>
+        <template v-for="piece in position.piece_black">
+          <template v-if="piece.piece_type==watch_piece">
+            <span class="hand_select" @click="grap_piece(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+          <template v-else>
+            <span class="hand" @click="grap_piece(piece.piece_type)">{{piece.piece_str}}</span>、
+          </template>
+        </template> 
+      </template>
+      </span>  
+      </div>
+      <div class="side_info">
+        <template v-if="mod_mode">
+          <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="mod_mode_off()">盤面編集終了</button>
+          </nav>  
+          <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="flip_board()">手番反転</button>
+          </nav>
+          
+          <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="analyze_board()">解析</button>
+          </nav>
+          <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="save_mod_ques()">問題を保存</button>
+          </nav>
+
+          <template v-if="show_answer">
+            　PV移動：<br>
+                　<button class="btn btn-secondary"  @click="move_pv(-1)">戻る</button> 
+                　<button class="btn btn-secondary"  @click="move_pv(1)">進む</button>
+              <br>
+          </template>          
+        </template>
+        <template v-else>
+          <template v-if="!quiz_mode">
+            <template v-if="!battle_mode">
+              <!--
+              <nav class="navbar navbar-light bg-light">
+              <button class="btn btn-secondary" @click="openFile()">ファイルを開く</button>
+                <a href="#" >データ絞り込み</a>
+              </nav>
+              <nav class="navbar navbar-light bg-light">
+              <button class="btn btn-secondary" @click="openHist()">成績表を開く</button>
+              <template v-if="to_render && is_db">
+              <a href="#" @click="filter_ques(1)">データ絞り込み</a>
+              </template>
+              </nav>
+              -->
+              <nav class="navbar navbar-light bg-light">
+                <button class="btn btn-secondary" @click="filter_ques(1)">ファイルを開く</button>
+              </nav>
+              <!--
+              <nav class="navbar navbar-light bg-light">
+                <button class="btn btn-secondary" @click="filter_ques(1)">エンジン設定</button>
+              </nav>
+              -->
+            </template>
+          </template>
+          
+          
+          <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="mod_mode_on()">盤面編集</button>
+          </nav>
+          <template v-if="to_render">
+            <template v-if="quiz_mode">
+              <nav class="navbar navbar-light bg-light">
+              <button class="btn btn-secondary" @click="quitQuiz()">クイズを終了</button>
+              </nav>
+              
+            </template>
+            <template v-else>
+              <template v-if="!battle_mode">
+              <nav class="navbar navbar-light bg-light">
+              <button class="btn btn-secondary" @click="tryQuiz()">クイズに挑戦</button>
+              </nav>
+              <nav class="navbar navbar-light bg-light">
+              <button class="btn btn-secondary" @click="saveHist()">成績表を保存</button>
+              </nav>
+              </template>
+              
+            </template>
+            <template v-if="battle_mode">
+                
+              　局面履歴：<br>
+              　<button class="btn btn-secondary" @click="change_bb(1)">前へ</button> 
+              　<button class="btn btn-secondary" @click="change_bb(-1)">次へ</button>
+              
+              <br>
+
+            </template>
+            <template v-else>
+              　問題移動：<br>
+              　<button class="btn btn-secondary" @click="changeIdx(-1)">前へ</button> 
+              　<button class="btn btn-secondary" @click="changeIdx(1)">次へ</button>
+              <br>
+            </template>
+          </template>
+        </template>
+        <template v-if="to_render">
+          <template v-if="show_answer">
+            　PV移動：<br>
+                　<button class="btn btn-secondary"  @click="move_pv(-1)">戻る</button> 
+                　<button class="btn btn-secondary"  @click="move_pv(1)">進む</button>
+              <br>
+              <template v-if="battle_mode">
+              　悪手アラートの基準点： <br>
+              　<input type="number" id="bad_alert" v-model="diff_bad_alert" value="334" step="1" min="0" >
+              </template>
+          </template>
+          <template v-else>
+            <nav class="navbar navbar-light bg-light">
+            <button class="btn btn-secondary" @click="force_show_answer()">答えを表示</button>
+            </nav>
+          </template>
+        </template>
+      </div>
+      </div>
+      
+      <br>
+      
+      <template v-if="mod_mode">
+        <br>
+        <nav class="navbar navbar-light bg-light">
+        sfen (書き換えることで盤面更新)：<input type=text, v-model="mod_sfen" class="form-control memo" rows="1" @change="change_sfen()"/>
+        </nav>
+        <!--
+          <textarea readonly v-model="realAnswer" class="form-control memo" id="rans" rows="10"></textarea>
+        -->
+          <nav class="navbar navbar-light bg-light">
+          PV一覧：
+           <select v-model="watch_pv" @change="pv_change(0)" class="form-control memo" size="5">
+              <template v-for="(pvinfo, index) in pv_infos">
+                <option v-bind:value="index">{{pvinfo}} </option>
+              </template>
+            </select>
+          </nav>
+          
+          <nav class="navbar navbar-light bg-light">
+          自分側がパスした場合のPV：
+           <select v-model="watch_pv_null"  @change="pv_change(1)" class="form-control memo" size="5">
+              <template v-for="(pvinfo, index) in pv_infos_null">
+                <option v-bind:value="index"> {{pvinfo}} </option>
+              </template>
+            </select>
+          </nav>
+
+          <nav class="navbar navbar-light bg-light">
+            相手側がパスした場合のPV：
+             <select v-model="watch_pv_null_enemy"  @change="pv_change(2)" class="form-control memo" size="5">
+                <template v-for="(pvinfo, index) in pv_infos_null_enemy">
+                  <option v-bind:value="index"> {{pvinfo}} </option>
+                </template>
+              </select>
+          </nav>
+        
+        <nav class="navbar navbar-light bg-light">
+          <textarea  v-model="inputText" class="form-control memo" id="memo" rows="6"></textarea>
+        </nav>
+      </template>
+      <template v-else>
+        <template v-if="to_render">
+          <template v-if="show_answer">
+            <br>
+            <br>
+            <nav class="navbar navbar-light bg-light">
+            {{ ques_result }} {{ prev_result }}
+            </nav>
+            <nav class="navbar navbar-light bg-light">
+              PV一覧：
+               <select v-model="watch_pv" @change="pv_change(0)" class="form-control memo" size="5">
+                  <template v-for="(pvinfo, index) in pv_infos">
+                    <option v-bind:value="index">{{pvinfo}} </option>
+                  </template>
+                </select>
+              </nav>
+              
+              <nav class="navbar navbar-light bg-light">
+              自分側がパスした場合のPV：
+               <select v-model="watch_pv_null"  @change="pv_change(1)" class="form-control memo" size="5">
+                  <template v-for="(pvinfo, index) in pv_infos_null">
+                    <option v-bind:value="index"> {{pvinfo}} </option>
+                  </template>
+                </select>
+              </nav>
+
+              <nav class="navbar navbar-light bg-light">
+                相手側がパスした場合のPV：
+                 <select v-model="watch_pv_null_enemy"  @change="pv_change(2)" class="form-control memo" size="5">
+                    <template v-for="(pvinfo, index) in pv_infos_null_enemy">
+                      <option v-bind:value="index"> {{pvinfo}} </option>
+                    </template>
+                  </select>
+              </nav>
+            <nav class="navbar navbar-light bg-light">
+              <textarea  v-model="inputText" class="form-control memo" id="memo" rows="6"></textarea>
+            </nav>
+            <nav class="navbar navbar-light bg-light">
+            <button @click="saveText()" class="btn float-left open-btn mr-sm-2">メモを上書きする</button>
+            </nav>
+          </template>
+        </template>
+        
+      </template>
+    </div>
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+    <script src="./quiz_loader.js"></script>
+    <script src="./history.js"></script>
+    <script src="./board_parse.js"></script>
+    <script src="../static/vue.global.js"></script>
+    <script>
+    //alert("unko");
+    </script>
+    <script>
+      Vue.createApp({
+        data() {
+          return{
+            inputText: '',
+            ques_path_list: [], // 問題のパスのリスト（フィルタする際もこれは書き換えない）
+            idx_filter : [], // フィルタされて生き残った問題のidx、シャッフルもこの配列に対して行う
+            db_result : [], // 成績表の結果
+            qnum : 0,
+            q_idx : 0,
+            ques_raw_data: {"question_sfen" : "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"}, // 問題のjsonの生データ
+            ques_dir : "", // 問題のあるルートパス
+            to_render: false,
+            realAnswer : "",
+            show_answer : true, // 非クイズモード、またはクイズモードで選択肢を押したあとはこれになる
+            quiz_mode : false,
+            is_db : false, // 問題集をフォルダから読み込んだか
+            play_history : {
+              "data" : [],
+            }, // 正解、不正解の記録
+            position : sfen_to_board("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"),
+            watch_piece : "" , // 手に持っている駒（手を提示するui用）
+            watch_square : [-1, -1], // 今触っているsquare（手を提示するui用）
+            ans_cmd : "", // 問題に対する答え,
+            ques_result : "", //問題の答えに対する評価（正解、不正解
+            prev_result : "", // 成績表での答え
+            one_line_history : "", // 成績表ロード時に表示。その際の解答と全体評価へのリンクを出力 
+            mod_mode : false, // 盤面編集モード
+            mod_sfen : "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1", // 盤面編集中のsfen
+            mod_ques_raw : {}, // 編集した盤面から得られた問題
+            pv_infos : [], // 今見ている局面の解析結果
+            pv_infos_null : [], // 今見ている局面のnullに対する解析結果
+            pv_infos_null_enemy : [], // 今見ている局面のnullに対する解析結果
+            pv_sfen : [],
+            pv_sfen_null : [],
+            pv_sfen_null_enemy : [],
+            current_pv : [], // 今見ているpv（sfenの配列）
+            pv_idx : -1, // 今見ているpvのidx
+            watch_pv : -1, // pv側を見てる場合の見てるpvのidx
+            watch_pv_null : -1, // null側を見てる場合の見てるnullのidx
+            watch_pv_null_enemy : -1, // null側を見てる場合の見てるnullのidx
+            watch_pv_sfen : "", // pvを見てる場合の今見てるsfen
+            is_flip_board : false, // 盤面を反転するか
+            pv_infos_before_mod : [], // 盤面編集前に見ていた局面の解析結果
+            pv_infos_null_before_mod : [], // 盤面編集前に見ている局面のnullに対する解析結果
+            pv_infos_null_enemy_before_mod : [], // 盤面編集前に見ている局面のnullに対する解析結果
+            pv_sfen_before_mod : [],
+            pv_sfen_null_before_mod : [],
+            pv_sfen_null_enemy_before_mod : [],
+            current_pv_before_mod : [], // 盤面編集前に見ているpv（sfenの配列）
+            pv_idx_before_mod : -1, // 盤面編集前に見ているpvのidx
+            watch_pv_before_mod : -1, // pv側を見てる場合の見てるpvのidx
+            watch_pv_null_before_mod : -1, // null側を見てる場合の見てるnullのidx
+            watch_pv_null_enemy_before_mod : -1, // null側を見てる場合の見てるnullのidx
+            watch_pv_sfen_before_mod : "", // pvを見てる場合の今見てるsfen
+            filter_config : {}, // 盤面をフィルタする際の条件
+            board_history : [], // 対局エンジンとして使う場合の手の履歴
+            battle_mode : false, // 対局モード
+            b_idx : 0, //見ている盤面のidx。ただし後ろから数える
+            diff_bad_alert : 334,
+            last_modified : "", // cmdを反映した時刻
+            cmd_resolved : 0, // cmdを処理した数(queueを処理)
+          }
+        },
+        methods: {
+          force_show_answer(){
+            this.show_answer = true;
+          },
+          flip_preference(){
+            this.is_flip_board = !this.is_flip_board;
+          },
+          openFile(event) {
+            quiz_load(this);
+          },
+          analyze_kif(event){
+            analyze_kif_body(this, "kif_analyzed");
+          },
+          mod_mode_on(event){
+            this.mod_mode = true;
+            this.show_answer = true;
+            if (this.pv_idx == -1){
+              this.mod_sfen = this.ques_raw_data.question_sfen;
+            }else{
+              this.mod_sfen = this.current_pv[this.pv_idx];
+            }
+
+            // どうあれ閲覧中の盤面の情報をコピーする
+            this.pv_infos_before_mod = this.pv_infos;
+            this.pv_infos_null_before_mod = this.pv_infos_null;
+            this.pv_infos_null_enemy_before_mod =this.pv_infos_null_enemy;
+            this.pv_sfen_before_mod  = this.pv_sfen;
+            this.pv_sfen_null_before_mod = this.pv_sfen_null;
+            this.pv_sfen_null_enemy_before_mod  = this.pv_sfen_null_enemy;
+            this.current_pv_before_mod = this.current_pv;
+            this.pv_idx_before_mod = this.pv_idx;
+            this.watch_pv_before_mod = this.watch_pv;
+            this.watch_pv_null_before_mod = this.watch_pv_null;
+            this.watch_pv_null_enemy_before_mod = this.watch_null_enemy;
+            this.watch_pv_sfen_before_mod = this.watch_pv_sfen;
+          },
+          call_alert(line){
+            alert(line);
+          },
+          mod_mode_off(event){
+            this.mod_mode = false;
+            // 局面を元に戻す
+            this.position = sfen_to_board(this.ques_raw_data.question_sfen);
+
+            // pvの情報も元に戻す
+            this.pv_infos = this.pv_infos_before_mod;
+            this.pv_infos_null = this.pv_infos_null_before_mod;
+            this.pv_infos_null_enemy = this.pv_infos_null_enemy_before_mod;
+            this.pv_sfen = this.pv_sfen_before_mod;
+            this.pv_sfen_null = this.pv_sfen_null_before_mod;
+            this.pv_sfen_null_enemy = this.pv_sfen_null_enemy_before_mod;
+            this.current_pv = this.current_pv_before_mod;
+            this.pv_idx = this.pv_idx_before_mod;
+            this.watch_pv = this.watch_pv_before_mod;
+            this.watch_pv_null = this.watch_pv_null_before_mod;
+            this.watch_null_enemy = this.watch_pv_null_enemy_before_mod;
+            this.watch_pv_sfen = this.watch_pv_sfen_before_mod;
+          },
+          flip_board(event){
+            flip_turn(this.position);
+            this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+          },
+          put_to_hand(to_black){
+            if (this.watch_square[0] != -1 && this.watch_square[1] != -1){
+              put_piece_to_hand(this.position, [this.watch_square[1]-1, this.watch_square[0]-1], to_black);
+              this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+              this.watch_square = [-1, -1];
+            }
+          },
+          analyze_board(event){
+            analyze_board_run(this);
+            //console.log(typeof(this.mod_ques_raw));
+            //this.writeAnswer();
+          },
+          save_mod_ques(event){
+            save_question(this);
+          },
+          change_sfen(){
+            try {
+              this.position=sfen_to_board(this.mod_sfen); 
+            } catch (error) {
+              // todo 変な文字列を入れてもsfenが消滅するだけで案外動いてしまう。これまずくね？
+              alert("invalid sfen");
+              this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+            }
+          },
+          move_pv(inc){
+            if(this.current_pv.length == 0){
+              return;
+            }
+            this.pv_idx += inc;
+            if(this.pv_idx >= this.current_pv.length){
+              this.pv_idx = this.current_pv.length -1 ;
+            }
+            if(this.pv_idx < -1){
+              this.pv_idx = -1;
+            }
+            if (this.pv_idx != -1){
+              this.watch_pv_sfen = this.current_pv[this.pv_idx];
+              this.position=sfen_to_board(this.watch_pv_sfen); 
+              if(this.mod_mode){
+                this.mod_sfen = this.watch_pv_sfen;
+              }
+            }else{
+              this.position = sfen_to_board(this.ques_raw_data.question_sfen);
+              if(this.mod_mode){
+                this.mod_sfen = this.ques_raw_data.question_sfen;
+              }
+              //this.pv_sfen = this.pv_history[this.pv_history.length-1];
+              //this.position=sfen_to_board(this.pv_sfen); 
+            }
+          },
+          pv_change(is_pv){
+            if(is_pv==0){
+              this.current_pv = this.pv_sfen[this.watch_pv];
+              this.watch_pv_null = -1;
+              this.watch_null_enemy = -1;
+            }else if(is_pv==1){
+              this.current_pv = this.pv_sfen_null[this.watch_pv_null];
+              this.watch_pv = -1;
+              this.watch_null_enemy = -1;
+            }
+            else if(is_pv==2){
+              this.current_pv = this.pv_sfen_null_enemy[this.watch_pv_null_enemy];
+              this.watch_pv = -1;
+              this.watch_pv_null = -1;
+            }
+            console.log(this.pv_sfen);
+            console.log(this.current_pv);
+
+            this.pv_idx = 0;
+            this.watch_pv_sfen = this.current_pv[0];
+            this.position=sfen_to_board(this.watch_pv_sfen); 
+          },
+          saveText(event) {
+              if (this.inputText != this.ques_raw_data["memo"]){
+                this.ques_raw_data["memo"] = this.inputText;
+                quiz_update(this);
+              }
+          },
+          tryQuiz(){
+            this.quiz_mode = true;
+            this.show_answer = false;
+            // 無い方が嬉しいとのことだった
+            // this.q_idx = 0;
+            if (this.ques_path_list.length > 0){
+              quiz_render(this, this.ques_path_list[this.idx_filter[this.q_idx]]);  
+            }
+          },
+          quitQuiz(){
+            this.quiz_mode = false;
+            this.show_answer = true;
+          },
+          grap_piece(type){
+            // alert(type);
+            if (this.show_answer && !this.mod_mode){
+              return;
+            }
+            if(this.watch_piece == type){
+              this.watch_piece = "";
+              this.watch_square = [-1, -1];
+            }else{
+              this.watch_piece = type;
+              this.watch_square = [-1, -1];
+            }
+          },
+          grap_piece_mod(type){
+            if(this.watch_piece == type){
+              this.watch_piece = "";
+              this.watch_square = [-1, -1];
+            }else{
+              this.watch_piece = type;
+              this.watch_square = [-1, -1];
+            }
+          },
+          changeIdx(inc) {
+            
+            if (this.qnum==0){
+              return;
+            }
+            this.q_idx += inc;
+            if (this.q_idx < 0){
+              this.q_idx += this.qnum;
+            }
+            if(this.q_idx >= this.qnum){
+              this.q_idx -= this.qnum;
+              if(this.quiz_mode){
+                alert("quiz finished");
+                this.quiz_mode = false;
+                this.show_answer = true;
+              }
+            }
+            if (this.quiz_mode){
+              this.show_answer = false;
+            }
+            if (this.ques_path_list.length > 0){
+              quiz_render(this, this.ques_path_list[this.idx_filter[this.q_idx]]);  
+            }
+          },
+          change_bb(inc) {
+            this.b_idx += inc;
+            if (this.b_idx < 0){
+              this.b_idx = 0;
+            }
+            
+            if(this.b_idx >= this.board_history.length){
+              this.b_idx = this.board_history.length - 1
+            }
+            quiz_render(this, this.board_history[this.board_history.length-1-this.b_idx]);
+          },
+          flip_check(x, y){
+            if(this.position.board[y-1][x-1].toLowerCase() == this.position.board[y-1][x-1]){
+              return true;
+            }
+            return false;
+          },
+ 
+          get_piece_str(x, y){
+            return Piece[this.position.board[y-1][x-1].toLowerCase()];
+          },
+          writeAnswer(){
+            if(this.mod_mode){
+              this.pv_infos = this.mod_ques_raw.pv_value_ja;
+              this.pv_infos_null = this.mod_ques_raw.null_ans_list
+              this.pv_sfen_null =this.mod_ques_raw.null_sfen_list;
+              this.pv_sfen =this.mod_ques_raw.pv_sfen;
+              this.pv_infos_null_enemy = this.mod_ques_raw.null_enemy_ans_list;
+              this.pv_sfen_null_enemy =this.mod_ques_raw.null_enemy_sfen_list;
+              this.watch_pv = -1;
+              this.watch_null = -1;
+              this.watch_null_enemy = -1;
+              this.current_pv = [];
+              this.watch_pv_sfen = "";
+              this.realAnswer = "";
+              for(let pv of this.mod_ques_raw.pv_value_ja) {
+                this.realAnswer += pv + "\n";
+              }
+              return;
+            }
+            this.pv_infos = this.ques_raw_data.pv_value_ja;
+            this.pv_infos_null = this.ques_raw_data.null_ans_list
+            this.pv_sfen_null =this.ques_raw_data.null_sfen_list;
+            this.pv_sfen =this.ques_raw_data.pv_sfen;
+            this.pv_infos_null_enemy = this.ques_raw_data.null_enemy_ans_list;
+            this.pv_sfen_null_enemy =this.ques_raw_data.null_enemy_sfen_list;
+            this.watch_pv = -1;
+            this.watch_null = -1;
+            this.watch_null_enemy = -1;
+            this.current_pv = [];
+            this.watch_pv_sfen = "";
+            console.log(this.pv_infos);
+            this.realAnswer = "";
+            for(let pv of this.ques_raw_data["pv_value_ja"]) {
+              this.realAnswer += pv + "\n";
+            }
+            this.inputText = this.ques_raw_data["memo"];
+            if (this.db_result.length > 0){
+              this.prev_result = "、 前回の答え：" + this.db_result[this.idx_filter[this.q_idx]].answer;
+            }else{
+              this.prev_result = "";
+            }
+
+          },
+          
+          filter_ques(history_mode){
+            console.log(history_mode);
+            this.filter_win = window.open('filter.html', '_blank', 'top=500,left=200,nodeIntegration=no');
+            // onloadを待たなければいけない
+          },
+          sendAnswer(ans_cmd){
+            // 答えを表示する
+            if (!this.quiz_mode || this.show_answer){
+              return;
+            }
+            this.show_answer = true;
+            let ans_hit = false;
+            let value = 0;
+            for (let i in this.ques_raw_data.selection_usi){
+              if (this.ques_raw_data.selection_usi[i] == ans_cmd){
+                value = this.ques_raw_data.values[0] - this.ques_raw_data.values[i];
+                this.ques_result = ans_cmd + ", Rank :" + i + ", Value :" + value;
+                rank = i;
+                ans_hit = true;
+                break;
+              }
+            }
+            // 手が当たらなかった場合
+            if(!ans_hit){
+              value = this.ques_raw_data.values[0] - this.ques_raw_data.values[this.ques_raw_data.values.length-1];
+              this.ques_result = ans_cmd + ", Rank : out of rank, Value : " + value;
+              rank = this.ques_raw_data.values.length;
+            }
+            this.watch_square = [-1, -1];
+            this.watch_piece = "";
+            this.play_history.data.push(
+              {
+              "path" : this.ques_path_list[this.idx_filter[this.q_idx]],
+              "answer" : ans_cmd,
+              "rank" : rank,
+              "value" : value
+              }
+            );
+          },
+          saveHist(){
+            save_history(this);
+          },
+          async openHist(){
+            await open_history(this);
+            
+            out = await db_analyze(this);
+            out_txt = "一致率 : " + out.hits_p + "% / " + out.hits_p_black + "% / " + out.hits_p_white + "% , 評価値損益平均 : " + out.ev_avg + " / " + out.ev_avg_black + " / " + out.ev_avg_white + ", 挑戦した問題数 : " + out.total + " / " + out.total_black + " / " + out.total_white;
+            console.log(out_txt);
+            this.filter_win.postMessage({"history": true, "summary" : {"summary_txt" : out_txt}}, "*");
+            
+          },
+          async clickBoardMod(x, y){
+            if (x == this.watch_square[0] && y == this.watch_square[1]){
+              // いま選択してるマスをクリックしたらキャンセル
+              this.watch_square = [-1, -1];
+              return;
+            }
+
+            if (this.watch_square[0] != -1 && this.watch_square[1] != -1){
+              move_piece(this.position, [this.watch_square[1]-1, this.watch_square[0]-1], [y-1, x-1]);
+              this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+              this.watch_square = [-1, -1];
+
+            }else{              
+              // 駒打ち
+              if(this.watch_piece != ""){
+                drop_piece(this.position, [y-1, x-1], this.watch_piece, this.watch_piece.toUpperCase() == this.watch_piece);
+                this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+                this.watch_piece = "";
+              }
+              // 既に選択しているマスがない→そのマスを選択
+              else if(this.position.board[y-1][x-1]!=""){
+                this.watch_square = [x, y];
+                this.watch_piece = "";
+              }
+            }
+          },
+          clickBoardRight(x, y){
+            if (!this.mod_mode){
+              return;
+            }
+            // 駒の成などを切り替える
+            flip_piece(this.position, [y-1, x-1]);
+            this.mod_sfen = posdata_to_sfen(this.position.board, this.position.piece_black, this.position.piece_white, this.position.turn_white, this.position.ply);
+          },
+          async clickBoard(x, y){
+            if (this.mod_mode){
+              this.clickBoardMod(x, y);
+              return;
+            }
+            if (this.show_answer){
+              return;
+            }
+            y_str = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
+            if (x == this.watch_square[0] && y == this.watch_square[1]){
+              // いま選択してるマスをクリックしたらキャンセル
+              this.watch_square = [-1, -1];
+              return;
+            }
+            else if (this.watch_square[0] != -1 && this.watch_square[1] != -1){
+              // それ以外のマスをクリックしたら解答とみなす
+              if (
+                (this.position.board[y-1][x-1].toLowerCase() == this.position.board[y-1][x-1] && this.position.turn_white && this.position.board[y-1][x-1]!="") ||
+                (this.position.board[y-1][x-1].toLowerCase() != this.position.board[y-1][x-1] && !this.position.turn_white)
+              ){
+                // 自分の駒を行き先にクリックした場合は持ち駒をそれに変える
+                // todo ただキャンセルのほうがいい？
+                this.watch_square = [x, y];
+                this.watch_piece = "";
+                return;
+              }
+              // todo 欲を言えば非合法な手はキャンセルにしてあげたい
+              this.ans_cmd = "" + (10-this.watch_square[0]) + y_str[this.watch_square[1]-1] + (10-x) + y_str[y-1];
+              // なる
+              if ( (this.position.turn_white && (this.watch_square[1] > 6 || y > 6)) ||
+                  (!this.position.turn_white && (this.watch_square[1] < 4 || y < 4))
+                ){
+                promote = await window.requires.ask_yesno();
+                if (promote.response==0){
+                  this.ans_cmd += "+";
+                }
+              }
+              this.watch_square = [-1, -1];
+              this.sendAnswer(this.ans_cmd);
+            }
+            else if(this.watch_piece != ""){
+              // 駒打ち
+
+              if(this.position.board[y-1][x-1] == ""){
+                this.ans_cmd = this.watch_piece.toUpperCase() + "*" + (10-x) + y_str[y-1];
+                this.watch_piece = "";
+                this.sendAnswer(this.ans_cmd);
+              }
+            }
+            else{
+              // マスを選んでないなら選択する
+              
+              if (
+                  (this.position.board[y-1][x-1].toLowerCase() == this.position.board[y-1][x-1] && this.position.turn_white) ||
+                  (this.position.board[y-1][x-1].toLowerCase() != this.position.board[y-1][x-1] && !this.position.turn_white)
+                ){
+                this.watch_square = [x, y];
+                this.watch_piece = "";
+              }
+            }
+            
+          },
+          async update_filter(config){
+            if (config.filter_config){
+              this.filter_config = config.filter_config;
+              this.idx_filter = [];
+              console.log(this.filter_config.diff_null_min);
+              for(let i =0; i< this.ques_path_list.length; ++i){
+                const json_data = await window.requires.get_json_data(this.ques_path_list[i]);
+                let is_skip = false;
+                // 問題の難易度によるフィルタリング
+                if (json_data.difficulty){
+                  if (json_data.difficulty.value_diff > this.filter_config.diff_calc_max ||
+                   json_data.difficulty.value_diff < this.filter_config.diff_calc_min ||
+                   json_data.difficulty.null_diff > this.filter_config.diff_null_min ||
+                   json_data.difficulty.null_diff < this.filter_config.diff_null_max 
+                  ){
+                    is_skip = true;
+                  }
+                }
+                // 過去の回答によるフィルタリング
+                if(this.db_result.length > 0){
+                  if (this.db_result[i].value > this.filter_config.diff_ans_max ||
+                    this.db_result[i].value < this.filter_config.diff_ans_min
+                  ){
+                    is_skip = true;
+                  } 
+                }
+                // 手番によるフィルタリング
+                if (!this.filter_config.use_black && json_data.question_sfen.indexOf(" b ") != -1){
+                  is_skip = true;
+                }
+                if (!this.filter_config.use_white && json_data.question_sfen.indexOf(" w ") != -1){
+                  is_skip = true;
+                }
+                
+                if(!is_skip){
+                  this.idx_filter.push(i);
+                }
+              }
+            }
+            if (this.idx_filter.length == 0){
+              this.idx_filter.push(0); // 0問になると色々バグるので
+            }
+            if (config.shuffle){
+              this.idx_filter = shuffle(this.idx_filter);
+            }
+            if (config.shuffle_dir){
+              // idx_filterをsortしなおす
+              this.idx_filter.sort(function(a,b){
+                if( a < b ) return -1;
+                if( a > b ) return 1;
+                return 0;
+              });
+              
+              //let out = await window.requires.shuffle_dir(this.ques_path_list, this.idx_filter);
+              //console.log(out);
+              
+              let dir_dict = {}
+              let dir_list = [];
+              for (let idx of this.idx_filter){
+                const parent = await window.requires.get_file_dir(this.ques_path_list[idx]);
+                if(!dir_dict[parent]){
+                  dir_list.push(parent);
+                  dir_dict[parent] = [idx]
+                }else{
+                  dir_dict[parent].push(idx);
+                }
+              }
+
+              dir_list = shuffle(dir_list);
+              this.idx_filter = [];
+              for (dir_name of dir_list){
+                for (idx of dir_dict[dir_name]){
+                  this.idx_filter.push(idx);
+                }
+              }
+            }
+            this.q_idx = 0;
+            this.qnum = this.idx_filter.length;
+            // 問題を更新する
+            if (this.ques_path_list.length > 0){
+              quiz_render(this, this.ques_path_list[this.idx_filter[this.q_idx]]);  
+            }
+          },
+          parse_cmd(text){
+            const cmd = text.split(' ', 1);
+            if(cmd[0] == "load_quiz"){
+              this.to_render = true;
+              const qpath = text.substr(10);
+              quiz_render(this, qpath);
+              this.battle_mode = true;
+              this.board_history.push(qpath);
+              this.b_idx = 0;
+            }
+            if(cmd[0] == "quit"){
+              window.requires.save_json_data("cmd.txt", "");
+              // window.close();
+            }
+            if(cmd[0] == "alert"){
+              // alertを出す
+              alert(text.substr(6));
+            }
+            if(cmd[0] == "change_alert"){
+              // alertを出す
+              const value = Number(text.substr(13));
+              this.diff_bad_alert = value;
+            }
+            if(cmd[0] == "value"){
+              const value = Number(text.substr(6));
+              if(value > this.diff_bad_alert){
+                alert("blunder");
+              }
+            }
+          }
+        },
+        mounted() {
+
+          window.addEventListener('message', (e) => {
+              //alert(e.data.diff_calc_min);
+              console.log(e.data);
+              if(e.data.cmd == "filter"){
+                this.update_filter(e.data);
+              }
+              if(e.data.cmd == "open_folder"){
+                this.openFile();
+              }
+              if(e.data.cmd == "open_history"){
+                this.openHist();
+              }
+              if(e.data.cmd == "open_kif"){
+                this.analyze_kif();
+              }
+          }),
+          window.requires.on('interval', async (event)=>{
+            // electron側からファイルをいじるとろくなことにならないと思われる
+            // のでstdin代わりに送られる情報ファイルを上から順番にこなしていく形式にする
+            // 一つのインターバルで0行以上の任意の数のコマンドが送られうることに注意
+            const modified = await window.requires.check_last_modified("cmd.txt");
+            if (modified != this.last_modified){
+              const cmd = await window.requires.read_file("cmd.txt");
+              this.last_modified = modified;
+              texts = cmd.split("\n");
+              let idx = 0;
+              if (texts.length < this.cmd_resolved){
+                this.cmd_resolved = 0;
+              }
+              for (let text of texts){
+                // anti windows
+                text = text.replace("\r", "")
+                idx += 1;
+                if (idx > this.cmd_resolved){
+                  if (text != ""){
+                    // stdin的な処理をして消してもいいのだが、エラーメッセージを吐くのでここで処置
+                    if(text == "quit"){
+                      window.requires.save_json_data("cmd.txt", "");
+                      // window.close();
+                    }
+                    this.parse_cmd(text);
+                    this.cmd_resolved += 1;
+                    console.log(this.cmd_resolved);
+                  }
+                }
+              }
+            }
+          }),
+          window.requires.on('stdin-vue', (event, text)=>{
+            this.parse_cmd(text);
+          })
+        }
+      }).mount('#app')
+    </script>
+  </body>
+</html>
