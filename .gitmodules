@@ -1,0 +1,6 @@
+[submodule "open-sekisyu"]
+	path = open-sekisyu
+	url = https://github.com/qhapaq-49/open-sekisyu
+[submodule "YaneuraOu"]
+	path = YaneuraOu
+	url = git@github.com:yaneurao/YaneuraOu.git

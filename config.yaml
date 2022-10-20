@@ -1,0 +1,18 @@
+engine_mode : "sekisyu"
+engine_name : "sekisyu-engine"
+
+engine_config:
+  analyze_go_null_enemy_cmd : "go_nodes_1000000"
+  null_enemy_rank : 2
+  qsa_path : "qsa/Qhapaq-Shogi-Academy.exe" # ここをビルドしたバイナリの名前に変更する
+
+base_engine_config:
+  engine_mode : "yaneuraou"
+  engine_path : "YaneuraOu-by-gcc.exe"
+  engine_name : "yaneuraou_7_sqmz_dia"
+  option : [["Threads", "4"], ["BookFile", "no_book"], ["MultiPV", "1"]]
+analyze_engine_config:
+  engine_mode : "yaneuraou"
+  engine_path : "YaneuraOu-by-gcc.exe"
+  engine_name : "yaneuraou_7_sqmz_dia"
+  option : [["Threads", "4"], ["BookFile", "no_book"], ["MultiPV", "10"]]
